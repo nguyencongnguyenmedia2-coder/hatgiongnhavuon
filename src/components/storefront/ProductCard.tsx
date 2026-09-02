@@ -49,8 +49,13 @@ export default function ProductCard({ product }: ProductCardProps) {
     <div className="group bg-white rounded-2xl md:rounded-3xl border border-emerald-100/90 shadow-card hover:shadow-elevated hover:border-emerald-400 transition-all duration-300 flex flex-col justify-between overflow-hidden relative product-card-hover">
       {/* Top Floating Badges */}
       <div className="absolute top-2.5 left-2.5 right-2.5 z-10 flex items-center justify-between pointer-events-none gap-1">
-        {/* Left: Germination Rate Chip */}
-        {product.germination_rate ? (
+        {/* Left: Best Seller Badge or Germination Chip */}
+        {product.best_seller ? (
+          <span className="bg-amber-400 text-emerald-950 font-black text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full shadow-md flex items-center gap-1 border border-amber-300">
+            <Zap className="w-3 h-3 fill-emerald-950 text-emerald-950 shrink-0" />
+            <span>🔥 BÁN CHẠY</span>
+          </span>
+        ) : product.germination_rate ? (
           <span className="bg-emerald-950/85 text-emerald-200 border border-emerald-500/40 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md shadow-sm flex items-center gap-1">
             <ShieldCheck className="w-3 h-3 text-amber-400 shrink-0" />
             <span>≥ {product.germination_rate.replace(/[^\d%]/g, '') || '90%'}</span>

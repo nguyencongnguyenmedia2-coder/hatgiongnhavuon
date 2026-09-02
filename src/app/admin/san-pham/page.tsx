@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Edit, Trash2, Eye, RefreshCw, Search, X, Save, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, RefreshCw, Search, X, Save, Upload, Flame, Sparkles, Filter } from 'lucide-react';
 import { getStoredProducts, deleteProductFromStore, saveProductToStore } from '@/lib/productStore';
 import { Product } from '@/types';
 
 export default function AdminProductListPage() {
   const [query, setQuery] = useState('');
+  const [filterType, setFilterType] = useState<'all' | 'best_seller' | 'is_new' | 'hidden'>('all');
   const [products, setProducts] = useState<Product[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -25,6 +26,8 @@ export default function AdminProductListPage() {
   const [shortDesc, setShortDesc] = useState('');
   const [description, setDescription] = useState('');
   const [isActive, setIsActive] = useState(true);
+  const [bestSeller, setBestSeller] = useState(true);
+  const [isNew, setIsNew] = useState(false);
 
   const loadProducts = () => {
     setProducts(getStoredProducts());
@@ -47,6 +50,8 @@ export default function AdminProductListPage() {
     setShortDesc('Hạt giống chuẩn F1 nảy mầm cao, dễ trồng tại nhà.');
     setDescription('Hạt giống chất lượng cao, đóng gói chuẩn bảo quản, cho hoa rau phát triển rực rỡ.');
     setIsActive(true);
+    setBestSeller(true);
+    setIsNew(false);
     setIsModalOpen(true);
   };
 
@@ -65,6 +70,8 @@ export default function AdminProductListPage() {
     setShortDesc(product.short_description || '');
     setDescription(product.description || '');
     setIsActive(product.is_active);
+    setBestSeller(Boolean(product.best_seller));
+    setIsNew(Boolean(product.is_new));
     setIsModalOpen(true);
   };
 
@@ -100,6 +107,8 @@ export default function AdminProductListPage() {
       short_description: shortDesc.trim(),
       description: description.trim(),
       is_active: isActive,
+      best_seller: bestSeller,
+      is_new: isNew,
       images: [
         {
           id: `img-${Date.now()}`,
@@ -116,16 +125,34 @@ export default function AdminProductListPage() {
     setIsModalOpen(false);
   };
 
-  const filtered = products.filter(
-    (p) =>
+  const filtered = products.filter((p) => {
+    // Text search
+    const matchesSearch =
       p.name.toLowerCase().includes(query.toLowerCase()) ||
-      p.sku.toLowerCase().includes(query.toLowerCase())
-  );
+      p.sku.toLowerCase().includes(query.toLowerCase());
+    if (!matchesSearch) return false;
+
+    // Filter tab
+    if (filterType === 'best_seller') return Boolean(p.best_seller);
+    if (filterType === 'is_new') return Boolean(p.is_new);
+    if (filterType === 'hidden') return !p.is_active;
+
+    return true;
+  });
 
   const toggleActive = (id: string) => {
     const target = products.find((p) => p.id === id);
     if (target) {
       const updated = { ...target, is_active: !target.is_active };
+      saveProductToStore(updated);
+      loadProducts();
+    }
+  };
+
+  const toggleBestSeller = (id: string) => {
+    const target = products.find((p) => p.id === id);
+    if (target) {
+      const updated = { ...target, best_seller: !target.best_seller };
       saveProductToStore(updated);
       loadProducts();
     }
@@ -152,13 +179,22 @@ export default function AdminProductListPage() {
     }
   };
 
+  const bestSellerCount = products.filter((p) => p.best_seller).length;
+
   return (
     <div className="space-y-6 pb-12">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-emerald-950">Quản Lý Sản Phẩm Hạt Giống</h1>
-          <p className="text-xs text-gray-500">Danh sách sản phẩm hoa, rau, cây ăn trái hiển thị trên trang web.</p>
+          <h1 className="text-2xl font-extrabold text-emerald-950 flex items-center gap-2">
+            <span>Quản Lý Sản Phẩm Hạt Giống</span>
+            <span className="text-xs bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-full font-bold">
+              🔥 {bestSellerCount} Bán Chạy
+            </span>
+          </h1>
+          <p className="text-xs text-gray-500">
+            Quản lý danh sách hạt giống, bật/tắt nhãn 🔥 <strong>Bán Chạy Nhất (Best Seller)</strong> hiển thị nổi bật trên website.
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -181,8 +217,8 @@ export default function AdminProductListPage() {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-card flex items-center justify-between">
-        <div className="relative w-80">
+      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -192,9 +228,55 @@ export default function AdminProductListPage() {
             className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-600 font-medium"
           />
         </div>
-        <span className="text-xs font-extrabold text-emerald-900">
-          Tổng cộng: {filtered.length} sản phẩm
-        </span>
+
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto text-xs font-bold">
+          <button
+            onClick={() => setFilterType('all')}
+            className={`px-3 py-1.5 rounded-xl border transition-all ${
+              filterType === 'all'
+                ? 'bg-emerald-800 text-white border-emerald-800 shadow-xs'
+                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+            }`}
+          >
+            Tất cả ({products.length})
+          </button>
+
+          <button
+            onClick={() => setFilterType('best_seller')}
+            className={`px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1 ${
+              filterType === 'best_seller'
+                ? 'bg-amber-500 text-emerald-950 border-amber-500 font-extrabold shadow-xs'
+                : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
+            }`}
+          >
+            <Flame className="w-3.5 h-3.5 fill-amber-950 text-amber-950" />
+            <span>🔥 Bán Chạy Nhất ({bestSellerCount})</span>
+          </button>
+
+          <button
+            onClick={() => setFilterType('is_new')}
+            className={`px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1 ${
+              filterType === 'is_new'
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span>Sản Phẩm Mới</span>
+          </button>
+
+          <button
+            onClick={() => setFilterType('hidden')}
+            className={`px-3 py-1.5 rounded-xl border transition-all ${
+              filterType === 'hidden'
+                ? 'bg-gray-700 text-white border-gray-700 shadow-xs'
+                : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+            }`}
+          >
+            🔴 Đã Ẩn
+          </button>
+        </div>
       </div>
 
       {/* Product Table */}
@@ -207,6 +289,7 @@ export default function AdminProductListPage() {
                 <th className="py-3.5 px-4">SKU</th>
                 <th className="py-3.5 px-4">Danh mục</th>
                 <th className="py-3.5 px-4">Giá bán</th>
+                <th className="py-3.5 px-4">Bán Chạy (Best-Seller)</th>
                 <th className="py-3.5 px-4">Tồn kho</th>
                 <th className="py-3.5 px-4">Trạng thái</th>
                 <th className="py-3.5 px-4 text-right">Thao tác</th>
@@ -227,7 +310,14 @@ export default function AdminProductListPage() {
                           <Image src={img} alt={product.name} fill sizes="40px" className="object-cover" />
                         </div>
                         <div>
-                          <p className="font-extrabold text-emerald-950 text-xs">{product.name}</p>
+                          <p className="font-extrabold text-emerald-950 text-xs flex items-center gap-1.5">
+                            <span>{product.name}</span>
+                            {product.best_seller && (
+                              <span className="bg-amber-400 text-emerald-950 text-[9px] font-black px-1.5 py-0.2 rounded-md shadow-2xs">
+                                HOT
+                              </span>
+                            )}
+                          </p>
                           <span className="text-[10px] text-gray-400">{product.germination_rate}</span>
                         </div>
                       </div>
@@ -241,6 +331,22 @@ export default function AdminProductListPage() {
 
                     <td className="py-3.5 px-4 font-bold text-emerald-950">
                       {product.price.toLocaleString('vi-VN')}đ
+                    </td>
+
+                    {/* Best Seller Quick Toggle Button */}
+                    <td className="py-3.5 px-4">
+                      <button
+                        onClick={() => toggleBestSeller(product.id)}
+                        className={`px-3 py-1 rounded-full text-[10px] font-black transition-all flex items-center gap-1 border ${
+                          product.best_seller
+                            ? 'bg-amber-400 text-emerald-950 border-amber-400 shadow-2xs scale-105'
+                            : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-amber-300'
+                        }`}
+                        title="Bấm để bật/tắt nhãn Sản Phẩm Bán Chạy Nhất"
+                      >
+                        <Flame className={`w-3 h-3 ${product.best_seller ? 'fill-emerald-950 text-emerald-950' : 'text-gray-400'}`} />
+                        <span>{product.best_seller ? '🔥 BÁN CHẠY' : '⚪ Bình Thường'}</span>
+                      </button>
                     </td>
 
                     <td className="py-3.5 px-4 font-bold">
@@ -385,6 +491,42 @@ export default function AdminProductListPage() {
                     onChange={(e) => setStock(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none font-bold"
                   />
+                </div>
+              </div>
+
+              {/* Best Seller & New Feature Toggles */}
+              <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
+                <span className="font-extrabold text-amber-950 text-xs flex items-center gap-1.5">
+                  <Flame className="w-4 h-4 text-amber-600 fill-amber-500" />
+                  <span>Cấu hình nổi bật &amp; Bán chạy trên Website:</span>
+                </span>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer bg-white p-2.5 rounded-xl border border-amber-200">
+                    <input
+                      type="checkbox"
+                      checked={bestSeller}
+                      onChange={(e) => setBestSeller(e.target.checked)}
+                      className="w-4 h-4 accent-amber-600 rounded"
+                    />
+                    <div>
+                      <span className="font-extrabold text-amber-950 block text-xs">🔥 Bán Chạy Nhất (Best Seller)</span>
+                      <span className="text-[10px] text-gray-500">Hiển thị huy hiệu 🔥 BÁN CHẠY ngoài website</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer bg-white p-2.5 rounded-xl border border-amber-200">
+                    <input
+                      type="checkbox"
+                      checked={isNew}
+                      onChange={(e) => setIsNew(e.target.checked)}
+                      className="w-4 h-4 accent-emerald-600 rounded"
+                    />
+                    <div>
+                      <span className="font-extrabold text-emerald-950 block text-xs">✨ Sản Phẩm Mới (New Arrival)</span>
+                      <span className="text-[10px] text-gray-500">Ưu tiên xếp đầu trong danh sách mới</span>
+                    </div>
+                  </label>
                 </div>
               </div>
 
