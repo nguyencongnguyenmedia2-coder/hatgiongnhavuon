@@ -106,6 +106,7 @@ export function saveProductToStore(product: Product): void {
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      window.dispatchEvent(new Event('hnv_products_updated'));
     } catch {
       // Ignore
     }
@@ -115,7 +116,11 @@ export function saveProductToStore(product: Product): void {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product),
-    }).catch((err) => console.warn('Supabase push error:', err));
+    })
+      .then(() => {
+        window.dispatchEvent(new Event('hnv_products_updated'));
+      })
+      .catch((err) => console.warn('Supabase push error:', err));
   }
 }
 
@@ -132,6 +137,7 @@ export function deleteProductFromStore(productId: string): void {
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      window.dispatchEvent(new Event('hnv_products_updated'));
     } catch {
       // Ignore
     }
@@ -139,7 +145,11 @@ export function deleteProductFromStore(productId: string): void {
     // 2. Async background delete on Supabase / Server Backend API
     fetch(`/api/products?id=${encodeURIComponent(productId)}`, {
       method: 'DELETE',
-    }).catch((err) => console.warn('Supabase delete error:', err));
+    })
+      .then(() => {
+        window.dispatchEvent(new Event('hnv_products_updated'));
+      })
+      .catch((err) => console.warn('Supabase delete error:', err));
   }
 }
 

@@ -6,28 +6,17 @@ import Image from 'next/image';
 import HeroBanner from '@/components/storefront/HeroBanner';
 import ProductCard from '@/components/storefront/ProductCard';
 import { DEMO_BANNERS, DEMO_BLOGS, DEFAULT_SITE_SETTINGS } from '@/lib/demoData';
-import { getStoredProducts } from '@/lib/productStore';
+import { useGlobalProductSync } from '@/lib/useGlobalProductSync';
 import { getStoredBlogs } from '@/lib/blogStore';
-import { Product, BlogPost } from '@/types';
-import { ShieldCheck, Truck, Clock, Sparkles, Sprout, ArrowRight, MessageCircle, HeartHandshake, Flame, RefreshCw } from 'lucide-react';
+import { BlogPost } from '@/types';
+import { ShieldCheck, Truck, Clock, Sparkles, Sprout, ArrowRight, MessageCircle, HeartHandshake, Flame } from 'lucide-react';
 
 export default function HomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const products = useGlobalProductSync();
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadData = () => {
-    const storedProds = getStoredProducts().filter((p) => p.is_active);
-    setProducts(storedProds);
-
-    const storedBlogs = getStoredBlogs().filter((b) => b.published);
-    setBlogs(storedBlogs);
-
-    setLoading(false);
-  };
 
   useEffect(() => {
-    loadData();
+    setBlogs(getStoredBlogs().filter((b) => b.published));
   }, []);
 
   // Categorize products dynamically

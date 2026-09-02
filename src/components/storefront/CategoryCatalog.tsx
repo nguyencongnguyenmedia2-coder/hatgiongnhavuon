@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import ProductCard from '@/components/storefront/ProductCard';
 import { Product } from '@/types';
-import { getStoredProducts } from '@/lib/productStore';
-import { Search, Filter, ShieldCheck, Sparkles, Sprout, ArrowUpDown, X, BookOpen, CheckCircle2 } from 'lucide-react';
+import { useGlobalProductSync } from '@/lib/useGlobalProductSync';
+import { Search, Filter, ShieldCheck, Sparkles, Sprout, ArrowUpDown, X, BookOpen } from 'lucide-react';
 
 interface CategoryCatalogProps {
   title: string;
   subtitle: string;
   categorySlug?: string;
-  products: Product[];
+  products?: Product[];
   bannerGradient?: string;
   subTypeTags?: string[];
 }
@@ -24,28 +24,11 @@ export default function CategoryCatalog({
   bannerGradient = 'from-rose-950 via-pink-900 to-rose-950',
   subTypeTags = ['Tất cả', 'Hoa Cúc', 'Hoa Hồng', 'Hướng Dương', 'Mười Giờ', 'Cẩm Chướng'],
 }: CategoryCatalogProps) {
-  const [productList, setProductList] = useState<Product[]>(initialProducts);
+  const productList = useGlobalProductSync(categorySlug);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('Tất cả');
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [sortBy, setSortBy] = useState<'newest' | 'price-asc' | 'price-desc' | 'best-selling' | 'discount'>('newest');
-
-  useEffect(() => {
-    const stored = getStoredProducts();
-    if (stored && stored.length > 0) {
-      if (categorySlug === 'hat-giong-hoa') {
-        setProductList(stored.filter((p) => (p.category_id === 'cat-1' || p.category_name?.includes('Hoa') || p.slug.includes('hoa')) && p.is_active));
-      } else if (categorySlug === 'hat-giong-rau') {
-        setProductList(stored.filter((p) => (p.category_id === 'cat-2' || p.category_name?.includes('Rau') || p.slug.includes('rau')) && p.is_active));
-      } else if (categorySlug === 'hat-giong-cay-an-trai') {
-        setProductList(stored.filter((p) => (p.category_id === 'cat-3' || p.category_name?.includes('Trái') || p.slug.includes('trai')) && p.is_active));
-      } else if (categorySlug === 'combo') {
-        setProductList(stored.filter((p) => (p.category_id === 'cat-5' || p.category_name?.includes('Combo') || p.slug.includes('combo')) && p.is_active));
-      } else {
-        setProductList(stored.filter((p) => p.is_active));
-      }
-    }
-  }, [categorySlug]);
 
   // Filter & Sort Logic
   const filteredProducts = useMemo(() => {
