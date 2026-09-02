@@ -4,8 +4,19 @@ import { DEMO_PRODUCTS } from '@/lib/demoData';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Hạt Giống Rau Sạch Thu Hoạch Nhanh | Hạt Giống Nhà Vườn',
-  description: 'Cung cấp hạt giống rau cải ngọt, rau muống lá tre, cà chua bi, xà lách. Thu hoạch sau 20-30 ngày. Tỷ lệ nảy mầm >90%.',
+  title: 'Hạt Giống Rau Sạch Hữu Cơ F1 | Thu Hoạch Nhanh Sau 20-30 Ngày',
+  description: 'Hạt giống rau cải ngọt, rau muống lá tre, cà chua bi, xà lách nhún. Thu hoạch siêu nhanh, an toàn hữu cơ cho sức khỏe gia đình.',
+  openGraph: {
+    title: 'Hạt Giống Rau Sạch Hữu Cơ F1 | Thu Hoạch Nhanh Sau 20-30 Ngày',
+    description: 'Hạt giống rau cải ngọt, rau muống lá tre, cà chua bi, xà lách nhún. Thu hoạch siêu nhanh, an toàn hữu cơ cho sức khỏe gia đình.',
+    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Hạt Giống Rau Sạch F1' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Hạt Giống Rau Sạch Hữu Cơ F1 Thu Hoạch Nhanh',
+    description: 'Hạt giống rau cải ngọt, rau muống lá tre, cà chua bi, xà lách nhún F1.',
+    images: ['/logo.png'],
+  },
 };
 
 export default function VegCategoryPage() {

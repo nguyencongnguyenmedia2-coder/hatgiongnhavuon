@@ -22,14 +22,43 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
   }
 
   const primaryImage =
-    product.images && product.images.length > 0 ? product.images[0].image_url : '';
+    product.images && product.images.length > 0
+      ? product.images[0].image_url
+      : 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=800&q=80';
+
+  const title = `${product.name} - Tỷ Lệ Nảy Mầm ${product.germination_rate}`;
+  const description = product.short_description || product.description || 'Hạt giống chuẩn F1 nảy mầm cao, dễ chăm sóc tại nhà.';
 
   return {
-    title: `${product.name} | Hạt Giống Nhà Vườn`,
-    description: product.short_description || product.description,
+    title,
+    description,
+    keywords: [
+      product.name,
+      `hạt giống ${product.name}`,
+      `cách trồng ${product.name}`,
+      'hạt giống nhà vườn',
+      'hạt giống chuẩn f1',
+    ],
     openGraph: {
-      title: product.name,
-      description: product.short_description || '',
+      title,
+      description,
+      url: `https://hatgiongnhavuon.vercel.app/san-pham/${product.slug}`,
+      siteName: 'Hạt Giống Nhà Vườn',
+      locale: 'vi_VN',
+      type: 'website',
+      images: [
+        {
+          url: primaryImage,
+          width: 800,
+          height: 800,
+          alt: product.name,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
       images: [primaryImage],
     },
   };

@@ -73,8 +73,30 @@ export default function DynamicProductDetail({ slug }: DynamicProductDetailProps
     .filter((p) => p.id !== product.id && p.is_active)
     .slice(0, 4);
 
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    image: [primaryImage],
+    description: product.short_description || product.description,
+    sku: product.sku,
+    offers: {
+      '@type': 'Offer',
+      price: product.price,
+      priceCurrency: 'VND',
+      availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      url: `https://hatgiongnhavuon.vercel.app/san-pham/${product.slug}`,
+    },
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+      {/* Product JSON-LD Script */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+
       {/* Breadcrumb */}
       <nav className="text-xs text-emerald-700 flex items-center gap-1 font-medium">
         <Link href="/" className="hover:underline">Trang chủ</Link>

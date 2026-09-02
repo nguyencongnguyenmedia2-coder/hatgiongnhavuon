@@ -4,8 +4,19 @@ import { DEMO_PRODUCTS } from '@/lib/demoData';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Tất Cả Hạt Giống Hoa, Rau, Cây Ăn Trái | Hạt Giống Nhà Vườn',
-  description: 'Tổng hợp danh mục hạt giống hoa, rau sạch F1, cây ăn trái chậu lùn thuần thục. Tỷ lệ nảy mầm >90%, hướng dẫn gieo trồng chi tiết.',
+  title: 'Tất Cả Hạt Giống Hoa, Rau Sạch, Cây Ăn Trái F1 Chuẩn Thuần',
+  description: 'Danh mục đầy đủ hạt giống hoa rực rỡ, hạt giống rau sạch F1, cây ăn trái chậu lùn thuần thục. Tỷ lệ nảy mầm >90%, giao hàng toàn quốc.',
+  openGraph: {
+    title: 'Tất Cả Hạt Giống Hoa, Rau Sạch, Cây Ăn Trái F1 Chuẩn Thuần',
+    description: 'Danh mục đầy đủ hạt giống hoa rực rỡ, hạt giống rau sạch F1, cây ăn trái chậu lùn thuần thục. Tỷ lệ nảy mầm >90%, giao hàng toàn quốc.',
+    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Tất Cả Hạt Giống' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Tất Cả Hạt Giống Hoa, Rau Sạch, Cây Ăn Trái F1 Chuẩn Thuần',
+    description: 'Danh mục đầy đủ hạt giống hoa rực rỡ, hạt giống rau sạch F1, cây ăn trái chậu lùn thuần thục.',
+    images: ['/logo.png'],
+  },
 };
 
 export default function ProductCatalogPage() {

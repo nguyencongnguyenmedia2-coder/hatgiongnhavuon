@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { DEMO_PRODUCTS, DEMO_BLOGS } from '@/lib/demoData';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hatgiongnhavuon.vn';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://hatgiongnhavuon.vercel.app';
 
   const staticRoutes = [
     '',
@@ -10,9 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/hat-giong-hoa',
     '/hat-giong-rau',
     '/hat-giong-cay-an-trai',
-    '/hat-giong-cay-canh',
     '/combo',
-    '/khuyen-mai',
     '/huong-dan',
     '/gioi-thieu',
     '/lien-he',

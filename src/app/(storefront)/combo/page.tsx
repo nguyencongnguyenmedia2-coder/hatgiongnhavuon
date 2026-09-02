@@ -4,8 +4,19 @@ import { DEMO_PRODUCTS } from '@/lib/demoData';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Combo Hạt Giống Tiết Kiệm 20% - 35% | Hạt Giống Nhà Vườn',
-  description: 'Bộ sưu tập combo hạt giống hoa, rau sạch trọn gói. Tiết kiệm chi phí, hướng dẫn kỹ thuật ươm mầm đầy đủ.',
+  title: 'Combo Hạt Giống Tiết Kiệm Khuyến Mãi 20% - 35%',
+  description: 'Combo hạt giống hoa rực rỡ, combo rau sạch 5 vị, combo sân thượng khởi đầu. Giá ưu đãi lớn, miễn phí ship và tặng cẩm nang gieo trồng.',
+  openGraph: {
+    title: 'Combo Hạt Giống Tiết Kiệm Khuyến Mãi 20% - 35%',
+    description: 'Combo hạt giống hoa rực rỡ, combo rau sạch 5 vị, combo sân thượng khởi đầu. Giá ưu đãi lớn, miễn phí ship.',
+    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Combo Hạt Giống Tiết Kiệm' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Combo Hạt Giống Tiết Kiệm Khuyến Mãi 20% - 35%',
+    description: 'Combo hạt giống hoa rực rỡ, combo rau sạch 5 vị trọn gói.',
+    images: ['/logo.png'],
+  },
 };
 
 export default function ComboPage() {

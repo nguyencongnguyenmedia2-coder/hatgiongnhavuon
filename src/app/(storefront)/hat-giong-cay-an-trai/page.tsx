@@ -4,8 +4,19 @@ import { DEMO_PRODUCTS } from '@/lib/demoData';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Hạt Giống Cây Ăn Trái Chậu Lùn Sai Quả | Hạt Giống Nhà Vườn',
-  description: 'Chuyên cung cấp hạt giống dâu tây, cà chua bi, dưa lưới, chanh dây chậu lùn. Thích hợp ban công & sân thượng.',
+  title: 'Hạt Giống Cây Ăn Trái Chậu Lùn Sai Quả | Dâu Tây, Cà Chua, Dưa Lưới',
+  description: 'Hạt giống dâu tây ngọc bích, cà chua bi lùn, dưa lưới hoàng kim, chanh dây tím chậu lùn. Sai quả mọng ngọt, thích hợp sân thượng & ban công.',
+  openGraph: {
+    title: 'Hạt Giống Cây Ăn Trái Chậu Lùn Sai Quả | Dâu Tây, Cà Chua, Dưa Lưới',
+    description: 'Hạt giống dâu tây ngọc bích, cà chua bi lùn, dưa lưới hoàng kim, chanh dây tím chậu lùn. Sai quả mọng ngọt.',
+    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Cây Ăn Trái Chậu Lùn' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Hạt Giống Cây Ăn Trái Chậu Lùn Sai Quả',
+    description: 'Hạt giống dâu tây ngọc bích, cà chua bi lùn, dưa lưới hoàng kim chậu lùn.',
+    images: ['/logo.png'],
+  },
 };
 
 export default function FruitCategoryPage() {

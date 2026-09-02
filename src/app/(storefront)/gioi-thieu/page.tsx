@@ -1,6 +1,23 @@
 import React from 'react';
 import Link from 'next/link';
 import { DEFAULT_SITE_SETTINGS } from '@/lib/demoData';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Giới Thiệu Thương Hiệu | Hạt Giống Nhà Vườn Chuẩn Thuần',
+  description: 'Hạt Giống Nhà Vườn tự hào là đơn vị uy tín cung cấp hạt giống hoa, rau hữu cơ F1 và cây ăn trái chậu lùn chất lượng hàng đầu Việt Nam.',
+  openGraph: {
+    title: 'Giới Thiệu Thương Hiệu | Hạt Giống Nhà Vườn Chuẩn Thuần',
+    description: 'Hạt Giống Nhà Vườn tự hào là đơn vị uy tín cung cấp hạt giống hoa, rau hữu cơ F1 và cây ăn trái chậu lùn.',
+    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Về Hạt Giống Nhà Vườn' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Giới Thiệu Thương Hiệu Hạt Giống Nhà Vườn',
+    description: 'Đơn vị uy tín cung cấp hạt giống hoa, rau sạch F1 và cây ăn trái chậu lùn.',
+    images: ['/logo.png'],
+  },
+};
 
 export default function AboutPage() {
   return (
@@ -15,25 +32,27 @@ export default function AboutPage() {
             🌿
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-emerald-950">
-              Về Hạt Giống Nhà Vườn
-            </h1>
-            <p className="text-xs font-bold text-amber-600">
-              {DEFAULT_SITE_SETTINGS.slogan}
-            </p>
+            <h1 className="text-2xl md:text-3xl font-black text-emerald-950">Về Hạt Giống Nhà Vườn</h1>
+            <p className="text-xs text-amber-600 font-bold">ƯƠM MẦM HÔM NAY – RỰC RỠ NGÀY MAI</p>
           </div>
         </div>
 
-        <div className="space-y-4 text-xs md:text-sm text-gray-700 leading-relaxed">
+        <div className="prose prose-emerald max-w-none text-xs md:text-sm text-gray-700 space-y-4 leading-relaxed">
           <p>
-            <strong>Hạt Giống Nhà Vườn</strong> ra đời với sứ mệnh mang không gian xanh rực rỡ và những luống rau sạch tự tay trồng tới từng ban công, mái hiên và sân vườn của mỗi gia đình Việt Nam.
+            Chào mừng bạn đến với <strong>Hạt Giống Nhà Vườn</strong> - thương hiệu chuyên phân phối các chủng loại hạt giống hoa rực rỡ, hạt giống rau sạch hữu cơ F1 và các giống cây ăn trái chậu lùn sai quả.
           </p>
 
-          <h3 className="font-bold text-emerald-900 text-base">Tầm nhìn &amp; Giá trị cốt lõi</h3>
-          <ul className="list-disc pl-5 space-y-1.5">
-            <li><strong>Chất lượng hạt chuẩn:</strong> 100% hạt giống chọn lọc thuần thục, tỷ lệ nảy mầm cao &gt;90%.</li>
-            <li><strong>Dễ trồng &amp; Chăm sóc:</strong> Phù hợp với điều kiện khí hậu nóng ẩm của Việt Nam.</li>
-            <li><strong>Đồng hành tận tụy:</strong> Tư vấn kỹ thuật gieo ủ, chọn đất, phân bón miễn phí suốt quá trình cây lớn.</li>
+          <h2 className="text-lg font-bold text-emerald-900 pt-2">Sứ mệnh của chúng tôi</h2>
+          <p>
+            Chúng tôi tin rằng tự tay gieo trồng một chậu hoa tươi thắm hay thu hoạch một lứa rau sạch cho gia đình là niềm vui thuần khiết nhất. Hạt Giống Nhà Vườn luôn nỗ lực tuyển chọn các dòng hạt giống thuần chủng, tỷ lệ nảy mầm cao vượt trội và cung cấp cẩm nang hướng dẫn kỹ thuật gieo chi tiết nhất.
+          </p>
+
+          <h2 className="text-lg font-bold text-emerald-900 pt-2">Cam kết chất lượng</h2>
+          <ul className="list-disc pl-5 space-y-1 font-medium">
+            <li>Tỷ lệ nảy mầm cam kết đạt trên 90%.</li>
+            <li>Hạt giống F1 đóng gói chuẩn bảo quản, không ẩm mốc.</li>
+            <li>Hỗ trợ tư vấn kỹ thuật gieo 24/7 qua Zalo &amp; Messenger.</li>
+            <li>Giao hàng tận nơi toàn quốc - Kiểm tra hàng trước khi thanh toán COD.</li>
           </ul>
         </div>
       </div>
