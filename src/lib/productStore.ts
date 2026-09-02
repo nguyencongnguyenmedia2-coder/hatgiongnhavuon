@@ -41,12 +41,24 @@ export async function syncProductsWithServer(): Promise<Product[]> {
       const data = await res.json();
       if (data.success && Array.isArray(data.products) && data.products.length > 0) {
         const serverProducts: Product[] = data.products;
+        const currentLocal = getStoredProducts();
 
-        // Save to localStorage
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(serverProducts));
+        // Merge local products that might not be on server yet
+        const mergedMap = new Map<string, Product>();
+        serverProducts.forEach((p) => mergedMap.set(p.id, p));
+        currentLocal.forEach((p) => {
+          if (!mergedMap.has(p.id)) {
+            mergedMap.set(p.id, p);
+          }
+        });
+
+        const mergedList = Array.from(mergedMap.values());
+
+        // Save merged list to localStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedList));
 
         // Sync in-memory DEMO_PRODUCTS
-        serverProducts.forEach((p) => {
+        mergedList.forEach((p) => {
           const idx = DEMO_PRODUCTS.findIndex((dp) => dp.id === p.id || dp.sku === p.sku);
           if (idx >= 0) {
             DEMO_PRODUCTS[idx] = p;
@@ -56,7 +68,7 @@ export async function syncProductsWithServer(): Promise<Product[]> {
         });
 
         isSyncing = false;
-        return serverProducts;
+        return mergedList;
       }
     }
   } catch (err) {

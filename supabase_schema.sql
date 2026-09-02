@@ -277,16 +277,29 @@ ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.banners ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+-- Enable RLS & Define Policies for All Operations
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.product_images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.banners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 
--- Public can read active products, active categories, published blog posts, active banners, public reviews
-CREATE POLICY "Public Read Active Products" ON public.products FOR SELECT USING (is_active = TRUE);
-CREATE POLICY "Public Read Categories" ON public.categories FOR SELECT USING (is_active = TRUE);
-CREATE POLICY "Public Read Blog Posts" ON public.blog_posts FOR SELECT USING (published = TRUE);
-CREATE POLICY "Public Read Banners" ON public.banners FOR SELECT USING (is_active = TRUE);
-CREATE POLICY "Public Read Site Settings" ON public.site_settings FOR SELECT USING (TRUE);
-CREATE POLICY "Public Read Approved Reviews" ON public.reviews FOR SELECT USING (status = 'approved');
+-- Allow Full Access (SELECT, INSERT, UPDATE, DELETE) for Public / API
+CREATE POLICY "Full Access Products" ON public.products FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Full Access Product Images" ON public.product_images FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Full Access Categories" ON public.categories FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Full Access Blog Posts" ON public.blog_posts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Full Access Banners" ON public.banners FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Full Access Site Settings" ON public.site_settings FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Full Access Coupons" ON public.coupons FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Full Access Orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Full Access Order Items" ON public.order_items FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Full Access Customers" ON public.customers FOR ALL USING (true) WITH CHECK (true);
 
 -- SEED DATA INITIALIZATION
 INSERT INTO public.site_settings (key, value) VALUES
