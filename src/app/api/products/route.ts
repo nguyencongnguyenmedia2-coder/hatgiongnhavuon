@@ -3,8 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { DEMO_PRODUCTS } from '@/lib/demoData';
 import { Product } from '@/types';
 
-// Persistent in-memory master server store
-let SERVER_PRODUCTS_STORE: Product[] = [...DEMO_PRODUCTS];
+// Persistent in-memory master server store (Reset for real product data)
+let SERVER_PRODUCTS_STORE: Product[] = [];
 
 // Helper to check if string is valid UUID
 function isValidUUID(uuidStr?: string): boolean {
