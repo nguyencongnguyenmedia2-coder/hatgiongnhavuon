@@ -32,46 +32,87 @@ export async function GET() {
       .select('*, product_images(*)');
 
     if (!error && dbProducts) {
-      const mappedProducts: Product[] = dbProducts.map((p: any) => {
-        const primaryImageObj = p.product_images && p.product_images.length > 0 ? p.product_images[0] : null;
-        return {
-          id: p.id,
-          name: p.name,
-          slug: p.slug,
-          sku: p.sku,
-          short_description: p.short_description || '',
-          description: p.description || '',
-          price: Number(p.price) || 0,
-          compare_price: p.compare_price ? Number(p.compare_price) : undefined,
-          stock: Number(p.stock) || 0,
-          category_id: p.category_id,
-          seed_type: p.seed_type,
-          germination_rate: p.germination_rate,
-          germination_days_min: p.germination_days_min,
-          germination_days_max: p.germination_days_max,
-          planting_season: p.planting_season,
-          difficulty: p.difficulty,
-          package_quantity: p.package_quantity,
-          origin: p.origin,
-          featured: p.featured,
-          best_seller: p.best_seller,
-          is_new: p.is_new,
-          is_active: p.is_active,
-          images: p.product_images && p.product_images.length > 0
-            ? p.product_images.map((img: any) => ({
-                id: img.id,
-                product_id: img.product_id,
-                image_url: img.image_url,
-                is_primary: img.is_primary,
-                sort_order: img.sort_order || 0,
-              }))
-            : primaryImageObj ? [{ id: 'img-1', product_id: p.id, image_url: primaryImageObj.image_url, is_primary: true, sort_order: 1 }] : [],
-          created_at: p.created_at,
-        };
-      });
+      if (dbProducts.length === 0) {
+        // Auto-seed initial demo products into Supabase Database
+        try {
+          for (const p of DEMO_PRODUCTS) {
+            const primaryImg = p.images && p.images.length > 0 ? p.images[0].image_url : '';
+            const { data: newDbProd } = await supabase
+              .from('products')
+              .insert({
+                name: p.name,
+                slug: p.slug,
+                sku: p.sku,
+                short_description: p.short_description || '',
+                description: p.description || '',
+                price: p.price,
+                compare_price: p.compare_price || null,
+                stock: p.stock,
+                germination_rate: p.germination_rate || '≥ 90%',
+                planting_season: p.planting_season || 'Quanh năm',
+                difficulty: p.difficulty || 'Dễ trồng',
+                package_quantity: p.package_quantity || 'Gói chuẩn',
+                origin: p.origin || 'Việt Nam',
+                best_seller: Boolean(p.best_seller),
+                is_new: Boolean(p.is_new),
+                is_active: Boolean(p.is_active),
+              })
+              .select('id')
+              .single();
 
-      // MERGE: Keep both Supabase products AND newly added server products
-      SERVER_PRODUCTS_STORE = mergeProducts(mappedProducts, SERVER_PRODUCTS_STORE);
+            if (newDbProd?.id && primaryImg) {
+              await supabase.from('product_images').insert({
+                product_id: newDbProd.id,
+                image_url: primaryImg,
+                is_primary: true,
+              });
+            }
+          }
+        } catch (seedErr) {
+          console.warn('Auto-seed Supabase warning:', seedErr);
+        }
+      } else {
+        const mappedProducts: Product[] = dbProducts.map((p: any) => {
+          const primaryImageObj = p.product_images && p.product_images.length > 0 ? p.product_images[0] : null;
+          return {
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            sku: p.sku,
+            short_description: p.short_description || '',
+            description: p.description || '',
+            price: Number(p.price) || 0,
+            compare_price: p.compare_price ? Number(p.compare_price) : undefined,
+            stock: Number(p.stock) || 0,
+            category_id: p.category_id,
+            seed_type: p.seed_type,
+            germination_rate: p.germination_rate,
+            germination_days_min: p.germination_days_min,
+            germination_days_max: p.germination_days_max,
+            planting_season: p.planting_season,
+            difficulty: p.difficulty,
+            package_quantity: p.package_quantity,
+            origin: p.origin,
+            featured: p.featured,
+            best_seller: p.best_seller,
+            is_new: p.is_new,
+            is_active: p.is_active,
+            images: p.product_images && p.product_images.length > 0
+              ? p.product_images.map((img: any) => ({
+                  id: img.id,
+                  product_id: img.product_id,
+                  image_url: img.image_url,
+                  is_primary: img.is_primary,
+                  sort_order: img.sort_order || 0,
+                }))
+              : primaryImageObj ? [{ id: 'img-1', product_id: p.id, image_url: primaryImageObj.image_url, is_primary: true, sort_order: 1 }] : [],
+            created_at: p.created_at,
+          };
+        });
+
+        // MERGE: Keep both Supabase products AND newly added server products
+        SERVER_PRODUCTS_STORE = mergeProducts(mappedProducts, SERVER_PRODUCTS_STORE);
+      }
     }
   } catch (err) {
     console.warn('Supabase fetch warning:', err);
