@@ -3,13 +3,28 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Edit, Trash2, Eye, RefreshCw, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, RefreshCw, Search, X, Save, Upload } from 'lucide-react';
 import { getStoredProducts, deleteProductFromStore, saveProductToStore } from '@/lib/productStore';
 import { Product } from '@/types';
 
 export default function AdminProductListPage() {
   const [query, setQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // Form State
+  const [name, setName] = useState('');
+  const [sku, setSku] = useState('');
+  const [categoryId, setCategoryId] = useState('cat-1');
+  const [price, setPrice] = useState('35000');
+  const [comparePrice, setComparePrice] = useState('50000');
+  const [stock, setStock] = useState('100');
+  const [germinationRate, setGerminationRate] = useState('≥ 90%');
+  const [imageUrl, setImageUrl] = useState('');
+  const [shortDesc, setShortDesc] = useState('');
+  const [description, setDescription] = useState('');
+  const [isActive, setIsActive] = useState(true);
 
   const loadProducts = () => {
     setProducts(getStoredProducts());
@@ -18,6 +33,88 @@ export default function AdminProductListPage() {
   useEffect(() => {
     loadProducts();
   }, []);
+
+  const openAddModal = () => {
+    setEditingProduct(null);
+    setName('');
+    setSku(`HNV-${Date.now().toString().slice(-6)}`);
+    setCategoryId('cat-1');
+    setPrice('35000');
+    setComparePrice('50000');
+    setStock('100');
+    setGerminationRate('≥ 90%');
+    setImageUrl('https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=800&q=80');
+    setShortDesc('Hạt giống chuẩn F1 nảy mầm cao, dễ trồng tại nhà.');
+    setDescription('Hạt giống chất lượng cao, đóng gói chuẩn bảo quản, cho hoa rau phát triển rực rỡ.');
+    setIsActive(true);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (product: Product) => {
+    setEditingProduct(product);
+    setName(product.name);
+    setSku(product.sku);
+    setCategoryId(product.category_id || 'cat-1');
+    setPrice(product.price.toString());
+    setComparePrice((product.compare_price || 0).toString());
+    setStock(product.stock.toString());
+    setGerminationRate(product.germination_rate || '≥ 90%');
+    
+    const primaryImg = product.images && product.images.length > 0 ? product.images[0].image_url : '';
+    setImageUrl(primaryImg);
+    setShortDesc(product.short_description || '');
+    setDescription(product.description || '');
+    setIsActive(product.is_active);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+
+    let categoryName = 'Hạt Giống Hoa';
+    if (categoryId === 'cat-2') categoryName = 'Hạt Giống Rau';
+    if (categoryId === 'cat-3') categoryName = 'Hạt Giống Cây Ăn Trái';
+    if (categoryId === 'cat-5') categoryName = 'Combo Hạt Giống';
+
+    const productData: Product = {
+      id: editingProduct ? editingProduct.id : `prod-${Date.now()}`,
+      name: name.trim(),
+      slug: editingProduct
+        ? editingProduct.slug
+        : name
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[đĐ]/g, 'd')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .trim()
+            .replace(/\s+/g, '-'),
+      sku: sku.trim() || `HNV-${Date.now().toString().slice(-6)}`,
+      category_id: categoryId,
+      category_name: categoryName,
+      price: Number(price) || 35000,
+      compare_price: Number(comparePrice) || 0,
+      stock: Number(stock) || 0,
+      germination_rate: germinationRate.trim() || '≥ 90%',
+      short_description: shortDesc.trim(),
+      description: description.trim(),
+      is_active: isActive,
+      images: [
+        {
+          id: `img-${Date.now()}`,
+          product_id: editingProduct ? editingProduct.id : `prod-${Date.now()}`,
+          image_url: imageUrl.trim() || 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=800&q=80',
+          is_primary: true,
+          sort_order: 1,
+        },
+      ],
+    };
+
+    saveProductToStore(productData);
+    loadProducts();
+    setIsModalOpen(false);
+  };
 
   const filtered = products.filter(
     (p) =>
@@ -41,8 +138,23 @@ export default function AdminProductListPage() {
     }
   };
 
+  // Local Image File Upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) {
+          setImageUrl(reader.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-12">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-emerald-950">Quản Lý Sản Phẩm Hạt Giống</h1>
@@ -58,13 +170,13 @@ export default function AdminProductListPage() {
             <span>Tải lại</span>
           </button>
 
-          <Link
-            href="/admin/san-pham/them"
-            className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5"
+          <button
+            onClick={openAddModal}
+            className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 active:scale-95 transition-all"
           >
             <Plus className="w-4 h-4 text-amber-300" />
-            <span>Thêm Sản Phẩm Mới</span>
-          </Link>
+            <span>+ Thêm Sản Phẩm Mới</span>
+          </button>
         </div>
       </div>
 
@@ -91,13 +203,13 @@ export default function AdminProductListPage() {
           <table className="w-full text-left text-xs">
             <thead className="bg-gray-50 text-gray-500 font-semibold border-b border-gray-100">
               <tr>
-                <th className="py-3 px-4">Ảnh &amp; Tên sản phẩm</th>
-                <th className="py-3 px-4">SKU</th>
-                <th className="py-3 px-4">Danh mục</th>
-                <th className="py-3 px-4">Giá bán</th>
-                <th className="py-3 px-4">Tồn kho</th>
-                <th className="py-3 px-4">Trạng thái</th>
-                <th className="py-3 px-4 text-right">Thao tác</th>
+                <th className="py-3.5 px-4">Ảnh &amp; Tên sản phẩm</th>
+                <th className="py-3.5 px-4">SKU</th>
+                <th className="py-3.5 px-4">Danh mục</th>
+                <th className="py-3.5 px-4">Giá bán</th>
+                <th className="py-3.5 px-4">Tồn kho</th>
+                <th className="py-3.5 px-4">Trạng thái</th>
+                <th className="py-3.5 px-4 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -109,7 +221,7 @@ export default function AdminProductListPage() {
 
                 return (
                   <tr key={product.id} className="hover:bg-gray-50/50">
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-gray-50 shrink-0 border border-gray-200" style={{ position: 'relative' }}>
                           <Image src={img} alt={product.name} fill sizes="40px" className="object-cover" />
@@ -121,47 +233,54 @@ export default function AdminProductListPage() {
                       </div>
                     </td>
 
-                    <td className="py-3 px-4 font-mono text-gray-600 font-bold">{product.sku}</td>
+                    <td className="py-3.5 px-4 font-mono text-gray-600 font-bold">{product.sku}</td>
 
-                    <td className="py-3 px-4 font-semibold text-emerald-800">
+                    <td className="py-3.5 px-4 font-semibold text-emerald-800">
                       {product.category_name || product.seed_type || 'Hạt giống'}
                     </td>
 
-                    <td className="py-3 px-4 font-bold text-emerald-950">
+                    <td className="py-3.5 px-4 font-bold text-emerald-950">
                       {product.price.toLocaleString('vi-VN')}đ
                     </td>
 
-                    <td className="py-3 px-4 font-bold">
+                    <td className="py-3.5 px-4 font-bold">
                       <span className={product.stock <= 10 ? 'text-amber-600' : 'text-emerald-800'}>
                         {product.stock} gói
                       </span>
                     </td>
 
-                    <td className="py-3 px-4">
+                    <td className="py-3.5 px-4">
                       <button
                         onClick={() => toggleActive(product.id)}
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
                           product.is_active
                             ? 'bg-emerald-100 text-emerald-800'
                             : 'bg-gray-100 text-gray-500'
                         }`}
                       >
-                        {product.is_active ? 'Đang hiện' : 'Đã ẩn'}
+                        {product.is_active ? '🟢 Đang hiện' : '🔴 Đã ẩn'}
                       </button>
                     </td>
 
-                    <td className="py-3 px-4 text-right space-x-1">
+                    <td className="py-3.5 px-4 text-right space-x-1">
                       <Link
                         href={`/san-pham/${product.slug}`}
                         target="_blank"
-                        className="p-1.5 rounded-lg text-gray-500 hover:text-emerald-700 inline-block"
+                        className="p-2 rounded-xl text-gray-500 hover:text-emerald-700 inline-block"
                         title="Xem trên website"
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
                       <button
+                        onClick={() => openEditModal(product)}
+                        className="p-2 rounded-xl text-emerald-700 hover:bg-emerald-50 inline-block font-bold transition-colors"
+                        title="Chỉnh sửa sản phẩm"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => handleDelete(product.id, product.name)}
-                        className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 inline-block"
+                        className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 inline-block font-bold transition-colors"
                         title="Xóa sản phẩm"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -174,6 +293,193 @@ export default function AdminProductListPage() {
           </table>
         </div>
       </div>
+
+      {/* Add / Edit Product Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl p-6 space-y-4 border border-emerald-100 my-8">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <h2 className="text-lg font-black text-emerald-950 flex items-center gap-2">
+                <Edit className="w-5 h-5 text-emerald-700" />
+                <span>{editingProduct ? 'Chỉnh Sửa Sản Phẩm Hạt Giống' : 'Thêm Sản Phẩm Hạt Giống Mới'}</span>
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSave} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-emerald-950 mb-1">Tên sản phẩm hạt giống *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ví dụ: Hạt Giống Hoa Cúc Mix Rực Rỡ..."
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-600 font-extrabold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">Mã SKU *</label>
+                  <input
+                    type="text"
+                    required
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none font-mono font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">Danh mục sản phẩm</label>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none font-bold bg-white"
+                  >
+                    <option value="cat-1">🌸 Hạt Giống Hoa</option>
+                    <option value="cat-2">🥬 Hạt Giống Rau</option>
+                    <option value="cat-3">🍓 Hạt Giống Cây Ăn Trái</option>
+                    <option value="cat-5">🎁 Combo Hạt Giống</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">Giá bán (VNĐ) *</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="35000"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none font-black text-emerald-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">Giá gốc (Gạch đi)</label>
+                  <input
+                    type="number"
+                    placeholder="50000"
+                    value={comparePrice}
+                    onChange={(e) => setComparePrice(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">Tồn kho (Gói)</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="100"
+                    value={stock}
+                    onChange={(e) => setStock(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">Tỷ lệ nảy mầm</label>
+                  <input
+                    type="text"
+                    placeholder="≥ 90%"
+                    value={germinationRate}
+                    onChange={(e) => setGerminationRate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">Trạng thái hiển thị</label>
+                  <select
+                    value={isActive ? 'true' : 'false'}
+                    onChange={(e) => setIsActive(e.target.value === 'true')}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none font-bold bg-white"
+                  >
+                    <option value="true">🟢 Hiển thị trên website</option>
+                    <option value="false">🔴 Ẩn sản phẩm</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-emerald-950 mb-1">Hình ảnh sản phẩm</label>
+                <div className="flex items-center gap-3">
+                  {imageUrl && (
+                    <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-emerald-200 shrink-0" style={{ position: 'relative' }}>
+                      <Image src={imageUrl} alt="Preview" fill className="object-cover" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="Dán đường dẫn ảnh URL..."
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-gray-200 focus:outline-none text-xs mb-1 font-mono"
+                    />
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 font-bold rounded-lg cursor-pointer border border-emerald-200 hover:bg-emerald-100 text-[11px]">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Tải ảnh từ máy tính</span>
+                      <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-emerald-950 mb-1">Mô tả ngắn</label>
+                <textarea
+                  rows={2}
+                  placeholder="Mô tả tóm tắt sản phẩm..."
+                  value={shortDesc}
+                  onChange={(e) => setShortDesc(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-emerald-950 mb-1">Mô tả chi tiết &amp; Kỹ thuật gieo</label>
+                <textarea
+                  rows={4}
+                  placeholder="Nhập thông tin hướng dẫn gieo chi tiết..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none font-medium"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-gray-100 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold rounded-xl shadow-md flex items-center gap-1.5"
+                >
+                  <Save className="w-4 h-4 text-amber-300" />
+                  <span>{editingProduct ? 'LƯU THAY ĐỔI' : 'THÊM SẢN PHẨM'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
