@@ -5,9 +5,41 @@ import { Category } from '@/types';
 
 let SERVER_CATEGORIES: Category[] = [...DEMO_CATEGORIES];
 
+function isValidUUID(uuidStr?: string): boolean {
+  if (!uuidStr) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidStr);
+}
+
 export async function GET() {
   try {
     const supabase = createAdminClient();
+
+    // Auto-seed Categories to Supabase if missing
+    for (const cat of DEMO_CATEGORIES) {
+      try {
+        const { data: existing } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', cat.slug)
+          .maybeSingle();
+
+        if (!existing) {
+          const payload: any = {
+            name: cat.name,
+            slug: cat.slug,
+            description: cat.description || '',
+            image_url: cat.image_url || '',
+            is_active: cat.is_active,
+          };
+          if (isValidUUID(cat.id)) payload.id = cat.id;
+
+          await supabase.from('categories').insert(payload);
+        }
+      } catch {
+        // Ignore seed warning
+      }
+    }
+
     const { data: dbCategories, error } = await supabase.from('categories').select('*');
 
     if (!error && dbCategories && dbCategories.length > 0) {
@@ -21,7 +53,6 @@ export async function GET() {
         sort_order: c.sort_order || 0,
         is_active: c.is_active,
       }));
-      return NextResponse.json({ success: true, categories: SERVER_CATEGORIES });
     }
   } catch (err) {
     console.error('Category Supabase fetch error:', err);
@@ -46,14 +77,29 @@ export async function POST(request: Request) {
 
     try {
       const supabase = createAdminClient();
-      await supabase.from('categories').upsert({
-        id: category.id.startsWith('cat-') ? undefined : category.id,
+      const payload: any = {
         name: category.name,
         slug: category.slug,
-        description: category.description,
-        image_url: category.image_url,
+        description: category.description || '',
+        image_url: category.image_url || '',
         is_active: category.is_active,
-      });
+      };
+
+      if (isValidUUID(category.id)) {
+        payload.id = category.id;
+      }
+
+      const { data: existing } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', category.slug)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase.from('categories').update(payload).eq('id', existing.id);
+      } else {
+        await supabase.from('categories').insert(payload);
+      }
     } catch (dbErr) {
       console.warn('Category Supabase sync warning:', dbErr);
     }

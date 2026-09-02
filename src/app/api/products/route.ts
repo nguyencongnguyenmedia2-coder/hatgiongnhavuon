@@ -6,16 +6,39 @@ import { Product } from '@/types';
 // Persistent in-memory master server store
 let SERVER_PRODUCTS_STORE: Product[] = [...DEMO_PRODUCTS];
 
-// Helper to upsert a product into Supabase PostgreSQL DB
-async function upsertProductToSupabase(product: Product) {
+// Helper to check if string is valid UUID
+function isValidUUID(uuidStr?: string): boolean {
+  if (!uuidStr) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidStr);
+}
+
+// Helper to generate URL slug
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/([^0-9a-z-\s])/g, '')
+    .replace(/(\s+)/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+// Upsert product to Supabase with detailed error logging
+async function upsertProductToSupabase(product: Product): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
     const supabase = createAdminClient();
+
+    const cleanSlug = product.slug || slugify(product.name || 'hat-giong') || `sp-${Date.now()}`;
+    const cleanSku = product.sku || `SKU-${Date.now()}`;
     const primaryImg = product.images && product.images.length > 0 ? product.images[0].image_url : '';
 
     const dbPayload: any = {
       name: product.name,
-      slug: product.slug,
-      sku: product.sku,
+      slug: cleanSlug,
+      sku: cleanSku,
       short_description: product.short_description || '',
       description: product.description || '',
       price: Number(product.price) || 0,
@@ -31,43 +54,70 @@ async function upsertProductToSupabase(product: Product) {
       is_active: Boolean(product.is_active),
     };
 
-    // Find existing DB product by SKU
+    // Only include category_id if it's a valid UUID
+    if (isValidUUID(product.category_id)) {
+      dbPayload.category_id = product.category_id;
+    }
+
+    // Only include id if it's a valid UUID
+    if (isValidUUID(product.id)) {
+      dbPayload.id = product.id;
+    }
+
+    // 1. Check existing in Supabase by SKU
     const { data: existingDbProd } = await supabase
       .from('products')
       .select('id')
-      .eq('sku', product.sku)
+      .eq('sku', cleanSku)
       .maybeSingle();
 
     let targetDbId = existingDbProd?.id;
 
     if (targetDbId) {
-      await supabase.from('products').update(dbPayload).eq('id', targetDbId);
+      const { error: updateErr } = await supabase
+        .from('products')
+        .update(dbPayload)
+        .eq('id', targetDbId);
+
+      if (updateErr) {
+        console.error('Supabase Update Error:', updateErr);
+        return { success: false, error: updateErr.message };
+      }
     } else {
-      const { data: newDbProd, error: insErr } = await supabase
+      const { data: newDbProd, error: insertErr } = await supabase
         .from('products')
         .insert(dbPayload)
         .select('id')
         .single();
-      
-      if (!insErr && newDbProd) {
+
+      if (insertErr) {
+        console.error('Supabase Insert Error:', insertErr);
+        return { success: false, error: insertErr.message };
+      }
+
+      if (newDbProd) {
         targetDbId = newDbProd.id;
       }
     }
 
-    // Insert Image
+    // 2. Insert Image if targetDbId exists
     if (targetDbId && primaryImg) {
-      await supabase.from('product_images').delete().eq('product_id', targetDbId);
-      await supabase.from('product_images').insert({
-        product_id: targetDbId,
-        image_url: primaryImg,
-        is_primary: true,
-      });
+      try {
+        await supabase.from('product_images').delete().eq('product_id', targetDbId);
+        await supabase.from('product_images').insert({
+          product_id: targetDbId,
+          image_url: primaryImg,
+          is_primary: true,
+        });
+      } catch (imgErr) {
+        console.warn('Product image insert warning:', imgErr);
+      }
     }
 
-    return targetDbId;
-  } catch (err) {
-    console.warn('Supabase upsert warning:', err);
-    return null;
+    return { success: true, id: targetDbId };
+  } catch (err: any) {
+    console.error('upsertProductToSupabase Exception:', err);
+    return { success: false, error: err.message };
   }
 }
 
@@ -75,12 +125,12 @@ export async function GET() {
   try {
     const supabase = createAdminClient();
 
-    // 1. Bulk push any missing local/demo products into Supabase Database!
+    // 1. Bulk push any server store products to Supabase
     for (const prod of SERVER_PRODUCTS_STORE) {
       await upsertProductToSupabase(prod);
     }
 
-    // 2. Fetch complete products & images list from Supabase
+    // 2. Fetch complete list from Supabase DB
     const { data: dbProducts, error } = await supabase
       .from('products')
       .select('*, product_images(*)');
@@ -138,11 +188,19 @@ export async function POST(request: Request) {
   try {
     const product: Product = await request.json();
 
-    if (!product || !product.name || !product.sku) {
-      return NextResponse.json({ success: false, error: 'Thiếu thông tin sản phẩm bắt buộc.' }, { status: 400 });
+    if (!product || !product.name) {
+      return NextResponse.json({ success: false, error: 'Thiếu tên sản phẩm.' }, { status: 400 });
     }
 
-    // 1. Save in server memory
+    if (!product.sku) {
+      product.sku = `HNV-SP-${Date.now().toString().slice(-6)}`;
+    }
+
+    if (!product.slug) {
+      product.slug = slugify(product.name);
+    }
+
+    // 1. Immediately Save/Upsert in-memory server store
     const existingIdx = SERVER_PRODUCTS_STORE.findIndex((p) => p.id === product.id || p.sku === product.sku);
     if (existingIdx >= 0) {
       SERVER_PRODUCTS_STORE[existingIdx] = product;
@@ -150,10 +208,14 @@ export async function POST(request: Request) {
       SERVER_PRODUCTS_STORE.unshift(product);
     }
 
-    // 2. Push to Supabase DB immediately
-    const dbId = await upsertProductToSupabase(product);
+    // 2. Push to Supabase DB immediately with UUID validation
+    const dbResult = await upsertProductToSupabase(product);
 
-    return NextResponse.json({ success: true, product, db_id: dbId });
+    if (dbResult.success && dbResult.id) {
+      product.id = dbResult.id;
+    }
+
+    return NextResponse.json({ success: true, product, db_result: dbResult });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

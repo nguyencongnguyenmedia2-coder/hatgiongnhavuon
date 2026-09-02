@@ -129,7 +129,11 @@ export function saveProductToStore(product: Product): void {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product),
     })
-      .then(() => {
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.product && data.product.id) {
+          syncProductsWithServer();
+        }
         window.dispatchEvent(new Event('hnv_products_updated'));
       })
       .catch((err) => console.warn('Supabase push error:', err));
