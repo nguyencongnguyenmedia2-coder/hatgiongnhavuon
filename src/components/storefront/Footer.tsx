@@ -164,15 +164,9 @@ export default function Footer({ settings }: FooterProps) {
         </div>
       </div>
 
-      {/* Bottom Copyright & Admin Access */}
-      <div className="bg-emerald-950/90 border-t border-emerald-900 py-4 px-4 text-center text-xs text-emerald-300 flex flex-col sm:flex-row justify-between items-center max-w-7xl mx-auto gap-2">
+      {/* Bottom Copyright */}
+      <div className="bg-emerald-950/90 border-t border-emerald-900 py-4 px-4 text-center text-xs text-emerald-300 flex justify-center items-center max-w-7xl mx-auto">
         <p>© 2026 {storeName}. Tất cả quyền được bảo lưu. Slogan: &quot;{slogan}&quot;</p>
-        <Link
-          href="/admin"
-          className="px-3.5 py-1.5 rounded-full bg-emerald-900 hover:bg-emerald-800 border border-emerald-700 text-amber-300 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
-        >
-          <span>🔐 TRANG QUẢN TRỊ WEBSITE (ADMIN)</span>
-        </Link>
       </div>
     </footer>
   );

@@ -134,15 +134,6 @@ export default function MobileHeader() {
                       </li>
                     );
                   })}
-                  <li className="pt-2">
-                    <Link
-                      href="/admin"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block py-2 px-3 rounded-xl bg-amber-50 text-amber-900 border border-amber-300/80 font-extrabold text-xs text-center shadow-xs"
-                    >
-                      🔐 TRANG QUẢN TRỊ ADMIN
-                    </Link>
-                  </li>
                 </ul>
               </nav>
             </div>

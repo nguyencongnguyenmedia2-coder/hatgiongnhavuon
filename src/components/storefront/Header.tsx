@@ -75,13 +75,6 @@ export default function Header({ settings }: HeaderProps) {
               <MessageCircle className="w-3.5 h-3.5 text-blue-400" />
               <span>Tư vấn Facebook</span>
             </a>
-
-            <Link
-              href="/admin"
-              className="hover:text-amber-300 transition-colors font-extrabold text-amber-400 flex items-center gap-1 bg-emerald-900/90 px-2.5 py-0.5 rounded-full border border-emerald-700 shadow-xs"
-            >
-              <span>🔐 Admin Portal</span>
-            </Link>
           </div>
         </div>
       </div>
