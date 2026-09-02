@@ -54,23 +54,6 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        {/* Security Notice */}
-        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-1">
-          <div className="flex items-center gap-1.5 font-black text-emerald-950">
-            <KeyRound className="w-4 h-4 text-amber-600" />
-            <span>Tài khoản Admin mặc định:</span>
-          </div>
-          <p className="font-mono text-[11px] text-gray-700">
-            <strong>Email:</strong> admin@hatgiongnhavuon.vn
-          </p>
-          <p className="font-mono text-[11px] text-gray-700">
-            <strong>Mật khẩu:</strong> admin123@hatgiongnhavuon
-          </p>
-          <p className="text-[10px] text-gray-500 italic mt-1">
-            (Có thể đổi mật khẩu bất kỳ lúc nào trong trang Cấu Hình Quản Trị).
-          </p>
-        </div>
-
         {/* Error Alert */}
         {errorMsg && (
           <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 font-bold text-xs flex items-start gap-2">
