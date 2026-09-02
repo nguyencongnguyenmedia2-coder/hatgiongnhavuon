@@ -8,14 +8,14 @@ export const metadata: Metadata = {
   description: 'Combo hạt giống hoa rực rỡ, combo rau sạch 5 vị, combo sân thượng khởi đầu. Giá ưu đãi lớn, miễn phí ship và tặng cẩm nang gieo trồng.',
   openGraph: {
     title: 'Combo Hạt Giống Tiết Kiệm Khuyến Mãi 20% - 35%',
-    description: 'Combo hạt giống hoa rực rỡ, combo rau sạch 5 vị, combo sân thượng khởi đầu. Giá ưu đãi lớn, miễn phí ship.',
-    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Combo Hạt Giống Tiết Kiệm' }],
+    description: 'Combo hạt giống hoa rực rỡ, combo rau sạch 5 vị, combo sân thượng khởi đầu. Giá ưu đãi lớn, miễn phí ship và tặng cẩm nang gieo trồng.',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Combo Hạt Giống Tiết Kiệm' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Combo Hạt Giống Tiết Kiệm Khuyến Mãi 20% - 35%',
     description: 'Combo hạt giống hoa rực rỡ, combo rau sạch 5 vị trọn gói.',
-    images: ['/logo.png'],
+    images: ['/og-image.jpg'],
   },
 };
 

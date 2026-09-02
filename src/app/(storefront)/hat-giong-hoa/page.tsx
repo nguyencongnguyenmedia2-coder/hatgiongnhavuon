@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Hạt Giống Hoa Dễ Trồng, Nảy Mầm >90% | Hoa Cúc, Hoa Hồng, Hướng Dương',
     description: 'Mua hạt giống hoa cúc mix, hoa hồng pháp, mười giờ thái, hướng dương lùn, cẩm chướng F1 chuẩn thuần.',
-    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Hạt Giống Hoa Rực Rỡ' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Hạt Giống Hoa Rực Rỡ' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Hạt Giống Hoa Dễ Trồng, Nảy Mầm >90%',
     description: 'Mua hạt giống hoa cúc mix, hoa hồng pháp, mười giờ thái, hướng dương lùn chuẩn thuần F1.',
-    images: ['/logo.png'],
+    images: ['/og-image.jpg'],
   },
 };
 

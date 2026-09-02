@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Hạt Giống Rau Sạch Hữu Cơ F1 | Thu Hoạch Nhanh Sau 20-30 Ngày',
     description: 'Hạt giống rau cải ngọt, rau muống lá tre, cà chua bi, xà lách nhún. Thu hoạch siêu nhanh, an toàn hữu cơ cho sức khỏe gia đình.',
-    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Hạt Giống Rau Sạch F1' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Hạt Giống Rau Sạch F1' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Hạt Giống Rau Sạch Hữu Cơ F1 Thu Hoạch Nhanh',
     description: 'Hạt giống rau cải ngọt, rau muống lá tre, cà chua bi, xà lách nhún F1.',
-    images: ['/logo.png'],
+    images: ['/og-image.jpg'],
   },
 };
 

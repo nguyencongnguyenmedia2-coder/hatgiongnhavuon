@@ -44,10 +44,10 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/logo.png',
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Logo Hạt Giống Nhà Vườn',
+        alt: 'Ảnh bìa Hạt Giống Nhà Vườn',
       },
     ],
   },
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    images: ['/logo.png'],
+    images: ['/og-image.jpg'],
   },
   robots: {
     index: true,

@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Giới Thiệu Thương Hiệu | Hạt Giống Nhà Vườn Chuẩn Thuần',
     description: 'Hạt Giống Nhà Vườn tự hào là đơn vị uy tín cung cấp hạt giống hoa, rau hữu cơ F1 và cây ăn trái chậu lùn.',
-    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Về Hạt Giống Nhà Vườn' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Về Hạt Giống Nhà Vườn' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Giới Thiệu Thương Hiệu Hạt Giống Nhà Vườn',
     description: 'Đơn vị uy tín cung cấp hạt giống hoa, rau sạch F1 và cây ăn trái chậu lùn.',
-    images: ['/logo.png'],
+    images: ['/og-image.jpg'],
   },
 };
 
