@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Edit, Trash2, Eye, RefreshCw, Search, X, Save, Upload, Flame, Sparkles, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, RefreshCw, Search, X, Save, Upload, Flame, Sparkles, Filter, Wand2 } from 'lucide-react';
 import { getStoredProducts, deleteProductFromStore, saveProductToStore } from '@/lib/productStore';
+import { generateProductAiContent } from '@/lib/aiContentGenerator';
 import { Product } from '@/types';
 
 export default function AdminProductListPage() {
@@ -28,6 +29,27 @@ export default function AdminProductListPage() {
   const [isActive, setIsActive] = useState(true);
   const [bestSeller, setBestSeller] = useState(true);
   const [isNew, setIsNew] = useState(false);
+  const [generatingAi, setGeneratingAi] = useState(false);
+
+  const handleGenerateAiContent = () => {
+    if (!name.trim()) {
+      alert('Vui lòng nhập Tên sản phẩm trước khi cho AI tự viết mô tả!');
+      return;
+    }
+
+    setGeneratingAi(true);
+    let categoryName = 'Hạt Giống Hoa';
+    if (categoryId === 'cat-2') categoryName = 'Hạt Giống Rau';
+    if (categoryId === 'cat-3') categoryName = 'Hạt Giống Cây Ăn Trái';
+    if (categoryId === 'cat-5') categoryName = 'Combo Hạt Giống';
+
+    setTimeout(() => {
+      const generated = generateProductAiContent(name, categoryName);
+      setShortDesc(generated.shortDescription);
+      setDescription(generated.detailedDescription);
+      setGeneratingAi(false);
+    }, 500);
+  };
 
   const loadProducts = () => {
     setProducts(getStoredProducts());
@@ -578,6 +600,27 @@ export default function AdminProductListPage() {
                     </label>
                   </div>
                 </div>
+              </div>
+
+              {/* AI Content Generator Assistant */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-900 text-white flex items-center justify-between gap-3 shadow-md border border-purple-700">
+                <div className="space-y-0.5">
+                  <span className="font-extrabold text-amber-300 text-xs flex items-center gap-1.5">
+                    <Wand2 className="w-4 h-4 text-amber-300" />
+                    <span>Trợ Lý AI Tự Động Viết Nội Dung Hạt Giống</span>
+                  </span>
+                  <p className="text-[10px] text-purple-200">
+                    Tự động tạo Mô tả ngắn &amp; Kỹ thuật 4 bước gieo trồng chuẩn chuyên gia theo tên sản phẩm.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleGenerateAiContent}
+                  disabled={generatingAi}
+                  className="px-3.5 py-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-xs rounded-xl shadow-md shrink-0 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {generatingAi ? '✨ AI Đang Viết...' : '🤖 AI TỰ VIẾT MÔ TẢ'}
+                </button>
               </div>
 
               <div>

@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Save, ArrowLeft, Upload, Trash2, Star, Plus, Link as LinkIcon, Sparkles } from 'lucide-react';
+import { Save, ArrowLeft, Upload, Trash2, Star, Plus, Link as LinkIcon, Sparkles, Wand2 } from 'lucide-react';
 import { DEMO_CATEGORIES } from '@/lib/demoData';
 import { saveProductToStore } from '@/lib/productStore';
+import { generateProductAiContent } from '@/lib/aiContentGenerator';
 import { Product } from '@/types';
 
 const SAMPLE_PRESET_IMAGES = [
@@ -47,6 +48,24 @@ export default function AdminAddProductPage() {
   const [customUrlInput, setCustomUrlInput] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [generatingAi, setGeneratingAi] = useState(false);
+
+  const handleGenerateAiContent = () => {
+    if (!name.trim()) {
+      alert('Vui lòng nhập Tên sản phẩm trước khi cho AI tự viết mô tả!');
+      return;
+    }
+
+    setGeneratingAi(true);
+    const selectedCategory = DEMO_CATEGORIES.find((c) => c.id === categoryId);
+
+    setTimeout(() => {
+      const generated = generateProductAiContent(name, selectedCategory?.name);
+      setShortDescription(generated.shortDescription);
+      setDescription(generated.detailedDescription);
+      setGeneratingAi(false);
+    }, 500);
+  };
 
   // File Upload Handler (Local Machine)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -501,9 +520,21 @@ export default function AdminAddProductPage() {
 
         {/* Content Descriptions */}
         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-card space-y-4">
-          <h2 className="font-extrabold text-emerald-950 text-base border-b border-gray-100 pb-2">
-            4. Hướng dẫn gieo trồng &amp; Mô tả sản phẩm
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-2">
+            <h2 className="font-extrabold text-emerald-950 text-base">
+              4. Hướng dẫn gieo trồng &amp; Mô tả sản phẩm
+            </h2>
+
+            <button
+              type="button"
+              onClick={handleGenerateAiContent}
+              disabled={generatingAi}
+              className="px-4 py-2 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-700 hover:from-purple-800 hover:to-indigo-700 text-white font-extrabold text-xs rounded-2xl shadow-md flex items-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+            >
+              <Wand2 className={`w-4 h-4 text-amber-300 ${generatingAi ? 'animate-spin' : ''}`} />
+              <span>{generatingAi ? '✨ AI ĐANG SOẠN NỘI DUNG...' : '🤖 AI TỰ VIẾT MÔ TẢ & KỸ THUẬT GIEO'}</span>
+            </button>
+          </div>
 
           <div>
             <label className="block font-bold text-emerald-950 mb-1">Mô tả ngắn</label>
