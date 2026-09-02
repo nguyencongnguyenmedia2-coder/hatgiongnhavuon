@@ -100,15 +100,28 @@ async function upsertProductToSupabase(product: Product): Promise<{ success: boo
       }
     }
 
-    // 2. Insert Image if targetDbId exists
-    if (targetDbId && primaryImg) {
+    // 2. Insert Images if targetDbId exists
+    if (targetDbId) {
       try {
         await supabase.from('product_images').delete().eq('product_id', targetDbId);
-        await supabase.from('product_images').insert({
-          product_id: targetDbId,
-          image_url: primaryImg,
-          is_primary: true,
-        });
+        
+        const imgsToInsert = product.images && product.images.length > 0
+          ? product.images.map((img, idx) => ({
+              product_id: targetDbId,
+              image_url: img.image_url,
+              is_primary: idx === 0 || Boolean(img.is_primary),
+              sort_order: idx,
+            }))
+          : primaryImg ? [{
+              product_id: targetDbId,
+              image_url: primaryImg,
+              is_primary: true,
+              sort_order: 0,
+            }] : [];
+
+        if (imgsToInsert.length > 0) {
+          await supabase.from('product_images').insert(imgsToInsert);
+        }
       } catch (imgErr) {
         console.warn('Product image insert warning:', imgErr);
       }
@@ -137,7 +150,9 @@ export async function GET() {
 
     if (!error && dbProducts && dbProducts.length > 0) {
       const mappedProducts: Product[] = dbProducts.map((p: any) => {
-        const primaryImageObj = p.product_images && p.product_images.length > 0 ? p.product_images[0] : null;
+        const defaultFallback = 'https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=800&q=80';
+        const hasImages = p.product_images && p.product_images.length > 0;
+        
         return {
           id: p.id,
           name: p.name,
@@ -161,15 +176,15 @@ export async function GET() {
           best_seller: p.best_seller,
           is_new: p.is_new,
           is_active: p.is_active,
-          images: p.product_images && p.product_images.length > 0
+          images: hasImages
             ? p.product_images.map((img: any) => ({
                 id: img.id,
                 product_id: img.product_id,
-                image_url: img.image_url,
+                image_url: img.image_url || defaultFallback,
                 is_primary: img.is_primary,
                 sort_order: img.sort_order || 0,
               }))
-            : primaryImageObj ? [{ id: 'img-1', product_id: p.id, image_url: primaryImageObj.image_url, is_primary: true, sort_order: 1 }] : [],
+            : [{ id: 'img-default', product_id: p.id, image_url: defaultFallback, is_primary: true, sort_order: 0 }],
           created_at: p.created_at,
         };
       });
